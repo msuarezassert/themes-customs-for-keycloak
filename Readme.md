@@ -12,12 +12,80 @@ La variable **project_versionMvn** refiere a la version de keycloak sobre la que
 
 ```bash
 docker run --rm \
-  -v $(pwd):/workspace \
+  -v $(pwd)/workspace:/workspace \
+  --entrypoint sh \
   quay.io/keycloak/keycloak:{project_versionMvn} \
-  sh -c "cp /opt/keycloak/lib/lib/main/org.keycloak.keycloak-themes-{project_versionMvn}.jar /workspace/"
+  -c "cp /opt/keycloak/lib/lib/main/org.keycloak.keycloak-themes-[0-9]*.jar /workspace/"
 ```
+Luego:
+
+- Ir a la carpeta workspace
+cd workspace
+
+- Descomprimir el JAR para explorar los themes
+unzip org.keycloak.keycloak-themes-*.jar -d themes-base
+
+- Verificar la estructura de carpetas
+ls -l themes-base/theme
 
 Esto permitirá explorar los themes oficiales y usarlos como base.
+
+## 🐳 Ejecutar Keycloak con Docker y Bind Mounts
+
+Vamos a ejecutar Keycloak montando:
+
+- 📂 data → persistencia de datos
+- 🎨 themes → desarrollo en caliente de themes
+
+### 📁 Estructura en este proyecto
+
+```
+themes-customs-for-keycloak/
+├── data/
+└── workspace/
+    └── themes-base/
+         └── theme/
+```
+
+### ▶️ Comando Docker
+
+Posicionarse en la **carpeta principal themes-customs-for-keycloak**
+
+```bash
+docker run --rm \
+  --name keycloak-custom-themes \
+  -p 8080:8080 \
+  -v $(pwd)/data:/opt/keycloak/data \
+  -v $(pwd)/workspace/themes-base/theme:/opt/keycloak/themes \
+  -e KEYCLOAK_ADMIN=admin \
+  -e KEYCLOAK_ADMIN_PASSWORD=admin \
+  quay.io/keycloak/keycloak:{project_versionMvn} \
+  start-dev
+```
+
+**📌 Acceso:**
+
+- URL: http://localhost:8080
+- Usuario: admin
+- Password: admin
+
+### 🔄 Desarrollo en caliente
+
+Cambios en:
+
+- .ftl
+- CSS
+- JS
+- imágenes
+
+Se reflejan al refrescar el navegador
+
+A veces es necesario:
+
+- Hard refresh
+- Limpiar cache
+- Reiniciar el contenedor
+
 
 ## 📁 Estructura de carpetas de un Theme
 
@@ -118,59 +186,6 @@ Están desarrolladas en React + PatternFly
 - Cambios profundos requieren:
   - Build del frontend (fuera del scope de themes clásicos)
 
-## 🐳 Ejecutar Keycloak con Docker y Bind Mounts
-
-Vamos a ejecutar Keycloak montando:
-
-- 📂 data → persistencia de datos
-- 🎨 themes → desarrollo en caliente de themes
-
-### 📁 Estructura recomendada
-
-```
-keycloak-customizations/
-├── data/
-└── themes/
-    └── my-theme/
-```
-
-### ▶️ Comando Docker
-
-```bash
-docker run -d \
-  --name keycloak \
-  -p 8080:8080 \
-  -v $(pwd)/data:/opt/keycloak/data \
-  -v $(pwd)/themes:/opt/keycloak/themes \
-  -e KEYCLOAK_ADMIN=admin \
-  -e KEYCLOAK_ADMIN_PASSWORD=admin \
-  quay.io/keycloak/keycloak:{project_versionMvn} \
-  start-dev
-```
-
-**📌 Acceso:**
-
-- URL: http://localhost:8080
-- Usuario: admin
-- Password: admin
-
-### 🔄 Desarrollo en caliente
-
-Cambios en:
-
-- .ftl
-- CSS
-- JS
-- imágenes
-
-Se reflejan al refrescar el navegador
-
-A veces es necesario:
-
-- Hard refresh
-- Limpiar cache
-- Reiniciar el contenedor
-
 ## ✅ Recomendaciones finales
 
 - Copiar un theme base y modificarlo
@@ -178,3 +193,7 @@ A veces es necesario:
 - Versionar los themes en Git
 - Mantener overrides pequeños y controlados
 - Usar PatternFly como guía visual
+
+## 🔎 Documentacion oficial
+
+- https://www.keycloak.org/ui-customization/themes
