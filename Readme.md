@@ -8,6 +8,8 @@ Keycloak provee un JAR con los themes por defecto que sirve como referencia para
 
 ### Comando Docker para descargar el JAR
 
+La variable **project_versionMvn** refiere a la version de keycloak sobre la que trabajaremos. Ej: 26.4
+
 ```bash
 docker run --rm \
   -v $(pwd):/workspace \
