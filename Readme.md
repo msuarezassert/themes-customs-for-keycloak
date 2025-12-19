@@ -17,18 +17,25 @@ docker run --rm \
   quay.io/keycloak/keycloak:{project_versionMvn} \
   -c "cp /opt/keycloak/lib/lib/main/org.keycloak.keycloak-themes-[0-9]*.jar /workspace/"
 ```
+
+> **Ejemplo:**
+ docker run --rm  -v $(pwd)/workspace:/workspace --entrypoint sh quay.io/keycloak/keycloak:**26.4** -c "cp /opt/keycloak/lib/lib/main/org.keycloak.keycloak-themes-[0-9]*.jar /workspace/"
+
 Luego:
 
-- Ir a la carpeta workspace
-cd workspace
-
 - Descomprimir el JAR para explorar los themes
-unzip org.keycloak.keycloak-themes-*.jar -d themes-base
+unzip workspace/org.keycloak.keycloak-themes-*.jar -d workspace/themes-base
 
 - Verificar la estructura de carpetas
-ls -l themes-base/theme
+ls -l workspace/themes-base/theme
 
 Esto permitirá explorar los themes oficiales y usarlos como base.
+
+## Crear nuevo tema
+
+Para crear el tema nuevo vamos a copiar la carpeta keycloak.v2 y le asignaremos el nombre del nuevo look & feel
+
+> **Ejemplo:** poc-keycloak-themes
 
 ## 🐳 Ejecutar Keycloak con Docker y Bind Mounts
 
@@ -56,13 +63,17 @@ docker run --rm \
   --name keycloak-custom-themes \
   -p 8080:8080 \
   -v $(pwd)/data:/opt/keycloak/data \
-  -v $(pwd)/workspace/themes-base/theme:/opt/keycloak/themes \
+  -v $(pwd)/workspace/themes-base/theme/{new_theme_name}:/opt/keycloak/themes/{new_theme_name} \
   -e KEYCLOAK_ADMIN=admin \
   -e KEYCLOAK_ADMIN_PASSWORD=admin \
   quay.io/keycloak/keycloak:{project_versionMvn} \
   start-dev
 ```
 
+> **Ejemplo:**
+> ```bash
+>  docker run --rm --name keycloak-custom-themes -p 8080:8080 -v $(pwd)/data:/opt/keycloak/data -v $(pwd)/workspace/themes-base/theme/poc-keycloak-themes:/opt/keycloak/themes/poc-keycloak-themes -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:26.4 start-dev
+> ```
 **📌 Acceso:**
 
 - URL: http://localhost:8080
